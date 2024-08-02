@@ -4,6 +4,8 @@
     "rootDir": "./src",
     "target": "ES2020",
     "module": "commonjs",
+    "declaration": true, // Generate .d.ts files
+    "declarationMap": true, // Generate .d.ts.map files (optional, for debugging)
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true

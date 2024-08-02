@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "A testing module for AvocaJS framework with various utility functions.",
   "main": "./dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "test": "npx jest --converage",
     "build": "tsc"
