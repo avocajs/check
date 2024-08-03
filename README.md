@@ -1,835 +1,981 @@
-# @AvocaJS/Check
+# @avocajs/check
 
-![npm](https://img.shields.io/npm/v/@avocajs/check)
-![license](https://img.shields.io/npm/l/@avocajs/check)
-![downloads](https://img.shields.io/npm/dw/@avocajs/check)
-
-`@AvocaJS/Check` is a utility library designed to provide a set of common validation and checking functions to enhance your JavaScript and TypeScript projects. This package is part of the AvocaJS suite, which aims to offer modular and reusable components for streamlined development.
-
-## Features
-
-- **Type Checks:** Validate types such as strings, numbers, arrays, and objects.
-- **Value Checks:** Check for specific value conditions like empty arrays or specific properties.
-- **Number Utilities:** Functions to check numerical properties and conditions.
+`@avocajs/check` is a utility library that provides a comprehensive set of methods to perform type checks, validations, and various other utility functions in JavaScript. This library helps ensure your code is robust and error-free by simplifying common validation tasks.
 
 ## Installation
 
-Install `@avocajs/check` using npm:
+To install `@avocajs/check`, use npm:
 
 ```bash
 npm install @avocajs/check
 ```
 
-## Usage
+## Importing
 
-Here's how to use `@avocajs/check` in your project:
+### CommonJS
 
-### Importing
+```javascript
+const { Check } = require("@avocajs/check");
+```
 
-```typescript
+### ES6 Modules
+
+```javascript
 import { Check } from "@avocajs/check";
 ```
 
-### Examples
+## Getting Started
 
-#### Type Checks
+Here's a quick example to get you started:
 
-```typescript
-console.log(Check.isText("Hello")); // true
+### Example: Checking Data Types
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+// Check if a value is a finite number
+console.log(Check.isFinite(100)); // true
+console.log(Check.isFinite(Infinity)); // false
+
+// Check if a value is a function
+console.log(Check.isFunction(function () {})); // true
+console.log(Check.isFunction(123)); // false
+
+// Check if a value is a string
+console.log(Check.isText("Hello World")); // true
 console.log(Check.isText(123)); // false
+
+// Check if a value is a non-empty text
+console.log(Check.isNonEmptyText("Hello")); // true
+console.log(Check.isNonEmptyText("")); // false
 ```
 
-#### Value Checks
+### Example: Validating Complex Structures
 
-```typescript
+```javascript
+const { Check } = require("@avocajs/check");
+
+// Check if a value is a Pending Promise!
+const pendingPromise = new Promise(() => {}); // A pending promise
+Check.isPending(pendingPromise).then((r) => console.log(r)); // true
+
+// Check if a value is a promise
+console.log(Check.isPromise(Promise.resolve())); // true
+console.log(Check.isPromise({})); // false
+
+// Check if a regular expression has a specific flag
+const regex = /test/i;
+console.log(Check.hasFlag(regex, "i")); // true
+console.log(Check.hasFlag(regex, "g")); // false
+```
+
+## Usage Examples
+
+### `is(value: any, type: _Type): boolean`
+
+Checks if a value matches a specific type.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check.is(123, "number")); // true
+console.log(Check.is("Hello", "string")); // true
+console.log(Check.is([], "array")); // true
+console.log(Check.is({}, "object")); // true
+```
+
+### `type(value: any): _Type`
+
+Returns the type of the given value.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check.type(123)); // 'number'
+console.log(Check.type("Hello")); // 'string'
+console.log(Check.type([])); // 'array'
+console.log(Check.type({})); // 'object'
+```
+
+### `isObject(value: any): boolean`
+
+Checks if a value is an object.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check.isObject({})); // true
+console.log(Check.isObject([])); // false
+console.log(Check.isObject(null)); // false
+console.log(Check.isObject(123)); // false
+```
+
+### `isObjectLike(value: any): boolean`
+
+Checks if a value is object-like (not null and of type 'object').
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check.isObjectLike({})); // true
+console.log(Check.isObjectLike([])); // true
+console.log(Check.isObjectLike(null)); // false
+console.log(Check.isObjectLike(123)); // false
+```
+
+### `isEmptyObject(value: any): boolean`
+
+Checks if an object is empty.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check.isEmptyObject({})); // true
+console.log(Check.isEmptyObject({ a: 1 })); // false
+console.log(Check.isEmptyObject([])); // false
+console.log(Check.isEmptyObject(null)); // false
+```
+
+### `isNonEmptyObject(value: any): boolean`
+
+Checks if an object is not empty.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check.isNonEmptyObject({})); // false
+console.log(Check.isNonEmptyObject({ a: 1 })); // true
+console.log(Check.isNonEmptyObject([])); // true
+console.log(Check.isNonEmptyObject(null)); // false
+```
+
+### `ownProp(object: object, property: string): boolean`
+
+Checks if an object has a specific property as its own (not inherited).
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+class Parent {
+  parentProp = undefined;
+}
+
+class Child extends Parent {
+  childProp = undefined;
+}
+
+Check.ownProp(new Child(), "parentProp"); // false
+Check.ownProp(new Child(), "childProp"); // true
+```
+
+### `ownProps(object: object, properties: string[]): boolean`
+
+Checks if an object has all specified properties as its own (not inherited).
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+const obj = { a: 1, b: 2 };
+console.log(Check.ownProps(obj, ["a", "b"])); // true
+console.log(Check.ownProps(obj, ["a", "c"])); // false
+console.log(Check.ownProps({}, ["toString"])); // false
+```
+
+### `hasProp(object: object, property: string): boolean`
+
+Checks if an object has a specific property (own or inherited).
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+class Parent {
+  parentProp = undefined;
+}
+
+class Child extends Parent {
+  childProp = undefined;
+}
+
+Check.hasProp(new Child(), "parentProp"); // true
+Check.hasProp(new Child(), "childProp"); // true
+```
+
+### `hasProps(object: object, properties: string[]): boolean`
+
+Checks if an object has all specified properties (own or inherited).
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+const obj = { a: 1, b: 2 };
+console.log(Check.hasProps(obj, ["a", "b"])); // true
+console.log(Check.hasProps(obj, ["a", "toString"])); // true
+console.log(Check.hasProps(obj, ["a", "c"])); // false
+```
+
+### `hasLength(target: any, length: number): boolean`
+
+Checks if a value has a specific length.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check.hasLength([1, 2, 3], 3)); // true
+console.log(Check.hasLength("abc", 3)); // true
+console.log(Check.hasLength({ length: 2 }, 2)); // true
+console.log(Check.hasLength([], 1)); // false
+```
+
+### `isArray(value: any): boolean`
+
+Checks if a value is an array.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check.isArray([])); // true
+console.log(Check.isArray({})); // false
+console.log(Check.isArray("abc")); // false
+console.log(Check.isArray(123)); // false
+```
+
+### `isEmptyArray(value: any): boolean`
+
+Checks if an array is empty.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
 console.log(Check.isEmptyArray([])); // true
-console.log(Check.isEmptyArray([1, 2, 3])); // false
+console.log(Check.isEmptyArray([1])); // false
+console.log(Check.isEmptyArray({})); // false
+console.log(Check.isEmptyArray("abc")); // false
 ```
 
-#### Number Utilities
+### `isNonEmptyArray(value: any): boolean`
 
-```typescript
-console.log(Check.isEven(2)); // true
+Checks if an array is not empty.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check.isNonEmptyArray([])); // false
+console.log(Check.isNonEmptyArray([1])); // true
+console.log(Check.isNonEmptyArray({})); // false
+console.log(Check.isNonEmptyArray("abc")); // false
+```
+
+### `isArrayOf(array: Array<any>, type: _Type): boolean`
+
+Checks if all elements in an array are of a specific type.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check.isArrayOf([1, 2, 3], "number")); // true
+console.log(Check.isArrayOf(["a", "b"], "string")); // true
+console.log(Check.isArrayOf([1, "a"], "number")); // false
+console.log(Check.isArrayOf([], "number")); // true
+```
+
+### `isIterable(value: any): boolean`
+
+Checks if a value is iterable.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check.isIterable([])); // true
+console.log(Check.isIterable("abc")); // true
+console.log(Check.isIterable({})); // false
+console.log(Check.isIterable(123)); // false
+```
+
+### `hasIndex(target: Array<any> | string, index: number): boolean`
+
+Checks if an array or string has a specific index.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check.hasIndex([1, 2, 3], 1)); // true
+console.log(Check.hasIndex("abc", 2)); // true
+console.log(Check.hasIndex([], 1)); // false
+console.log(Check.hasIndex("abc", 3)); // false
+```
+
+### `isNumber(value: any): boolean`
+
+Checks if a value is a number.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check.isNumber(123)); // true
+console.log(Check.isNumber("123")); // false
+console.log(Check.isNumber(NaN)); // false
+console.log(Check.isNumber(Infinity)); // false
+```
+
+### `isInteger(value: any): boolean`
+
+Checks if a value is an integer.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check.isInteger(123)); // true
+console.log(Check.isInteger(123.45)); // false
+console.log(Check.isInteger("123")); // false
+console.log(Check.isInteger(Infinity)); // false
+```
+
+### `isFloat(value: any): boolean`
+
+Checks if a value is a float (number with decimals).
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check.isFloat(123.45)); // true
+console.log(Check.isFloat(123)); // false
+console.log(Check.isFloat("123.45")); // false
+console.log(Check.isFloat(Infinity)); // false
+```
+
+### `isEven(value: number): boolean`
+
+Checks if a number is even.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check.isEven(4)); // true
+console.log(Check.isEven(3)); // false
+console.log(Check.isEven(0)); // true
+console.log(Check.isEven(-2)); // true
+```
+
+### `isOdd(value: number): boolean`
+
+Checks if a number is odd.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
 console.log(Check.isOdd(3)); // true
-console.log(Check.isBetween(5, 1, 10)); // true
-console.log(Check.isBetweenStrict(5, 1, 10)); // true
+console.log(Check.isOdd(4)); // false
+console.log(Check.isOdd(1)); // true
+console.log(Check.isOdd(-3)); // true
 ```
 
-## API Reference
+### `isBetween(number: number, min: number, max: number): boolean`
 
-# API Reference for `Check` Class
+Checks if a number is between two values (inclusive).
 
-#### `Check.is(value: string): boolean`
+```javascript
+const { Check } = require("@avocajs/check");
 
-Checks if the given value is a valid type.
+console.log(Check.isBetween(5, 1, 10)); // true
+console.log(Check.isBetween(0, 1, 10)); // false
+console.log(Check.isBetween(10, 1, 10)); // true
+console.log(Check.isBetween(15, 1, 10)); // false
+```
 
-- **Parameters:**
-
-  - `value` (string): The type to check against valid types.
-
-- **Returns:** `boolean` - Returns `true` if the type is valid; otherwise, `false`.
-
----
-
-#### `Check.type(value: any): _Type`
-
-Determines the type of the given value.
-
-- **Parameters:**
-
-  - `value` (any): The value whose type is to be determined.
-
-- **Returns:** `_Type` - Returns the type of the value as a string.
-
----
-
-#### `Check.isObject(value: any): boolean`
-
-Checks if the given value is an object (excluding arrays).
-
-- **Parameters:**
-
-  - `value` (any): The value to check.
-
-- **Returns:** `boolean` - Returns `true` if the value is an object; otherwise, `false`.
-
----
-
-#### `Check.isObjectLike(value: any): boolean`
-
-Checks if the given value is either an object or an array.
-
-- **Parameters:**
-
-  - `value` (any): The value to check.
-
-- **Returns:** `boolean` - Returns `true` if the value is an object or array; otherwise, `false`.
-
----
-
-#### `Check.isEmptyObject(value: any): boolean`
-
-Checks if the given object is empty (has no own properties).
-
-- **Parameters:**
-
-  - `value` (any): The object to check.
-
-- **Returns:** `boolean` - Returns `true` if the object is empty; otherwise, `false`.
-
----
-
-#### `Check.isNonEmptyObject(value: any): boolean`
-
-Checks if the given object is not empty (has at least one own property).
-
-- **Parameters:**
-
-  - `value` (any): The object to check.
-
-- **Returns:** `boolean` - Returns `true` if the object is not empty; otherwise, `false`.
-
----
-
-#### `Check.ownProp(object: object, property: string): boolean`
-
-Checks if the given object has a specific own property.
-
-- **Parameters:**
-
-  - `object` (object): The object to check.
-  - `property` (string): The property to check for.
-
-- **Returns:** `boolean` - Returns `true` if the object has the own property; otherwise, `false`.
-
----
-
-#### `Check.ownProps(object: object, properties: string[]): boolean`
-
-Checks if the given object has all the specified own properties.
-
-- **Parameters:**
-
-  - `object` (object): The object to check.
-  - `properties` (string[]): The properties to check for.
-
-- **Returns:** `boolean` - Returns `true` if the object has all the own properties; otherwise, `false`.
-
----
-
-#### `Check.hasProp(object: object, property: string): boolean`
-
-Checks if the given object has a specific property (own or inherited).
-
-- **Parameters:**
-
-  - `object` (object): The object to check.
-  - `property` (string): The property to check for.
-
-- **Returns:** `boolean` - Returns `true` if the object has the property; otherwise, `false`.
-
----
-
-#### `Check.hasProps(object: object, properties: string[]): boolean`
-
-Checks if the given object has all the specified properties (own or inherited).
-
-- **Parameters:**
-
-  - `object` (object): The object to check.
-  - `properties` (string[]): The properties to check for.
-
-- **Returns:** `boolean` - Returns `true` if the object has all the properties; otherwise, `false`.
-
----
-
-#### `Check.hasLength(target: Object | Array<any> | string, length: number): boolean`
-
-Checks if the given target (object, array, or string) has a specific length.
-
-- **Parameters:**
-
-  - `target` (Object | Array<any> | string): The target to check.
-  - `length` (number): The length to check for.
-
-- **Returns:** `boolean` - Returns `true` if the target has the specified length; otherwise, `false`.
-
----
-
-#### `Check.isArray(value: any): boolean`
-
-Checks if the given value is an array.
-
-- **Parameters:**
-
-  - `value` (any): The value to check.
-
-- **Returns:** `boolean` - Returns `true` if the value is an array; otherwise, `false`.
-
----
-
-#### `Check.isEmptyArray(value: any): boolean`
-
-Checks if the given value is an empty array.
-
-- **Parameters:**
-
-  - `value` (any): The value to check.
-
-- **Returns:** `boolean` - Returns `true` if the value is an empty array; otherwise, `false`.
-
----
-
-#### `Check.isNonEmptyArray(value: any): boolean`
-
-Checks if the given value is a non-empty array.
-
-- **Parameters:**
-
-  - `value` (any): The value to check.
-
-- **Returns:** `boolean` - Returns `true` if the value is a non-empty array; otherwise, `false`.
-
----
-
-#### `Check.isArrayOf(array: Array<any>, type: _Type): boolean`
-
-Checks if the given array contains elements of a specific type.
-
-- **Parameters:**
-
-  - `array` (Array<any>): The array to check.
-  - `type` (\_Type): The type to check for.
-
-- **Returns:** `boolean` - Returns `true` if all elements in the array are of the specified type; otherwise, `false`.
-
----
-
-#### `Check.isIterable(value: any): boolean`
-
-Checks if the given value is iterable.
-
-- **Parameters:**
-
-  - `value` (any): The value to check.
-
-- **Returns:** `boolean` - Returns `true` if the value is iterable; otherwise, `false`.
-
----
-
-#### `Check.hasIndex(target: Array<any> | string, index: number): boolean`
-
-Checks if the given array or string has an element at a specific index.
-
-- **Parameters:**
-
-  - `target` (Array<any> | string): The array or string to check.
-  - `index` (number): The index to check for.
-
-- **Returns:** `boolean` - Returns `true` if the target has an element at the specified index; otherwise, `false`.
-
----
-
-#### `Check.isNumber(value: any): boolean`
-
-Checks if the given value is a number.
-
-- **Parameters:**
-
-  - `value` (any): The value to check.
-
-- **Returns:** `boolean` - Returns `true` if the value is a number; otherwise, `false`.
-
----
-
-#### `Check.isInteger(value: any): boolean`
-
-Checks if the given value is an integer.
-
-- **Parameters:**
-
-  - `value` (any): The value to check.
-
-- **Returns:** `boolean` - Returns `true` if the value is an integer; otherwise, `false`.
-
----
-
-#### `Check.isFloat(value: any): boolean`
-
-Checks if the given value is a floating-point number.
-
-- **Parameters:**
-
-  - `value` (any): The value to check.
-
-- **Returns:** `boolean` - Returns `true` if the value is a floating-point number; otherwise, `false`.
-
----
-
-#### `Check.isEven(value: number): boolean`
-
-Checks if the given number is even.
-
-- **Parameters:**
-
-  - `value` (number): The number to check.
-
-- **Returns:** `boolean` - Returns `true` if the number is even; otherwise, `false`.
-
----
-
-#### `Check.isOdd(value: number): boolean`
-
-Checks if the given number is odd.
-
-- **Parameters:**
-
-  - `value` (number): The number to check.
-
-- **Returns:** `boolean` - Returns `true` if the number is odd; otherwise, `false`.
-
----
-
-#### `Check.isBetween(number: number, min: number, max: number): boolean`
-
-Checks if the given number is within a specified range (inclusive).
-
-- **Parameters:**
-
-  - `number` (number): The number to check.
-  - `min` (number): The minimum value of the range.
-  - `max` (number): The maximum value of the range.
-
-- **Returns:** `boolean` - Returns `true` if the number is between min and max (inclusive); otherwise, `false`.
-
----
-
-#### `Check.isBetweenStrict(number: number, min: number, max: number): boolean`
-
-Checks if the given number is within a specified range (exclusive).
-
-- **Parameters:**
-
-  - `number` (number): The number to check.
-  - `min` (number): The minimum value of the range.
-  - `max` (number): The maximum value of the range.
-
-- **Returns:** `boolean` - Returns `true` if the number is strictly between min and max; otherwise, `false`.
-
----
-
-#### `Check.isLessThan(compare: number, to: number): boolean`
+### `isLessThan(compare: number, to: number): boolean`
 
 Checks if a number is less than another number.
 
-- **Parameters:**
+```javascript
+const { Check } = require("@avocajs/check");
 
-  - `compare` (number): The number to compare.
-  - `to` (number): The number to compare against.
+console.log(Check.isLessThan(5, 10)); // true
+console.log(Check.isLessThan(10, 10)); // false
+console.log(Check.isLessThan(15, 10)); // false
+console.log(Check.isLessThan(5, 0)); // false
+```
 
-- **Returns:** `boolean` - Returns `true` if `compare` is less than `to`; otherwise, `false`.
-
----
-
-#### `Check.isLessThanOrEqual(compare: number, to: number): boolean`
+### `isLessThanOrEqual(compare: number, to: number): boolean`
 
 Checks if a number is less than or equal to another number.
 
-- **Parameters:**
+```javascript
+const { Check } = require("@avocajs/check");
 
-  - `compare` (number): The number to compare.
-  - `to` (number): The number to compare against.
+console.log(Check.isLessThanOrEqual(5, 10)); // true
+console.log(Check.isLessThanOrEqual(10, 10)); // true
+console.log(Check.isLessThanOrEqual(15, 10)); // false
+console.log(Check.isLessThanOrEqual(5, 0)); // false
+```
 
-- **Returns:** `boolean` - Returns `true` if `compare` is less than or equal to `to`; otherwise, `false`.
-
----
-
-#### `Check.isGreaterThan(compare: number, to: number): boolean`
+### `isGreaterThan(compare: number, to: number): boolean`
 
 Checks if a number is greater than another number.
 
-- **Parameters:**
+```javascript
+const { Check } = require("@avocajs/check");
 
-  - `compare` (number): The number to compare.
-  - `to` (number): The number to compare against.
+console.log(Check.isGreaterThan(15, 10)); // true
+console.log(Check.isGreaterThan(10, 10)); // false
+console.log(Check.isGreaterThan(5, 10)); // false
+console.log(Check.isGreaterThan(5, 0)); // true
+```
 
-- **Returns:** `boolean` - Returns `true` if `compare` is greater than `to`; otherwise, `false`.
-
----
-
-#### `Check.isGreaterThanOrEqual(compare: number, to: number): boolean`
+### `isGreaterThanOrEqual(compare: number, to: number): boolean`
 
 Checks if a number is greater than or equal to another number.
 
-- **Parameters:**
-
-  - `compare` (number): The number to compare.
-  - `to` (number): The number to compare against.
-
-- **Returns:** `boolean` - Returns `true` if `compare` is greater than or equal to `to`; otherwise, `false`.
-
----
-
-#### `Check.isNegativeInfinity(value: any): boolean`
-
-Checks if the given value is negative infinity.
-
-- **Parameters:**
-
-  - `value` (any): The value to check.
-
-- **Returns:** `boolean` - Returns `true` if the value is negative infinity; otherwise, `false`.
-
----
-
-#### `Check.isInfinity(value: any): boolean`
-
-Checks if the given value is infinity.
-
-- **Parameters:**
-
-  - `value` (any): The value to check.
-
-- **Returns:** `boolean` - Returns `true` if the value is infinity; otherwise, `false`.
-
----
-
-#### `Check.isFinite(value: any): boolean`
-
-Checks if the given value is a finite number.
-
-- **Parameters:**
-
-  - `value` (any): The value to check.
-
-- **Returns:** `boolean` - Returns `true` if the value is finite; otherwise, `false`.
-
----
-
-#### `Check.isFunction(value: any): boolean`
-
-Checks if the given value is a function.
-
-- **Parameters:**
-
-  - `value` (any): The value to check.
-
-- **Returns:** `boolean` - Returns `true` if the value is a function; otherwise, `false`.
-
----
-
-#### `Check.isAsyncFunction(value: any): boolean`
-
-Checks if the given value is an async function.
-
-- **Parameters:**
-
-  - `value` (any): The value to check.
-
-- **Returns:** `boolean` - Returns `true` if the value is an async function; otherwise, `false`.
-
----
-
-#### `Check.isText(value: any): boolean`
-
-Checks if the given value is a string.
-
-- **Parameters:**
-
-  - `value` (any): The value to check.
-
-- **Returns:** `boolean` - Returns `true` if the value is a string; otherwise, `false`.
-
----
-
-#### `Check.isString(value: any): boolean`
-
-Checks if the given value is a string.
-
-- **Parameters:**
-
-  - `value` (any): The value to check.
-
-- **Returns:** `boolean` - Returns `true` if the value is a string; otherwise, `false`.
-
----
-
-#### `Check.isEmptyText(value: any): boolean`
-
-Checks if the given string is empty or consists only of whitespace.
-
-- **Parameters:**
-
-  - `value` (any): The value to check.
-
-- **Returns:** `boolean` - Returns `true` if the string is empty or whitespace; otherwise, `false`.
-
----
-
-#### `Check.isNonEmptyText(value: any): boolean`
-
-Checks if the given string is not empty and contains non-whitespace characters.
-
-- **Parameters:**
-
-  - `value` (any): The value to check.
-
-- **Returns:** `boolean` - Returns `true` if the string is not empty and contains non-whitespace characters; otherwise, `false`.
-
----
-
-#### `Check.isSymbol(value: any): boolean`
-
-Checks if the given value is a symbol.
-
-- **Parameters:**
-
-  - `value` (any): The value to check.
-
-- **Returns:** `boolean` - Returns `true` if the value is a symbol; otherwise, `false`.
-
----
-
-#### `Check.isBoolean(value: any): boolean`
-
-Checks if the given value is a boolean.
-
-- **Parameters:**
-
-  - `value` (any): The value to check.
-
-- **Returns:** `boolean` - Returns `true` if the value is a boolean; otherwise, `false`.
-
----
-
-#### `Check.isTruthy(value: any): boolean`
-
-Checks if the given value is truthy.
-
-- **Parameters:**
-
-  - `value` (any): The value to check.
-
-- **Returns:** `boolean` - Returns `true` if the value is truthy; otherwise, `false`.
-
----
-
-#### `Check.isFalsy(value: any): boolean`
-
-Checks if the given value is falsy.
-
-- **Parameters:**
-
-  - `value` (any): The value to check.
-
-- **Returns:** `boolean` - Returns `true` if the value is falsy; otherwise, `false`.
-
----
-
-#### `Check.isNull(value: any): boolean`
-
-Checks if the given value is null.
-
-- **Parameters:**
-
-  - `value` (any): The value to check.
-
-- **Returns:** `boolean` - Returns `true` if the value is null; otherwise, `false`.
-
----
-
-#### `Check.isUndefined(value: any): boolean`
-
-Checks if the given value is undefined.
-
-- **Parameters:**
-
-  - `value` (any): The value to check.
-
-- **Returns:** `boolean` - Returns `true` if the value is undefined; otherwise, `false`.
-
----
-
-#### `Check.isDefined(value: any): boolean`
-
-Checks if the given value is defined (not undefined).
-
-- **Parameters:**
-
-  - `value` (any): The value to check.
-
-- **Returns:** `boolean` - Returns `true` if the value is defined; otherwise, `false`.
-
----
-
-#### `Check.isDefinedStrict(value: any): boolean`
-
-Checks if the given value is defined and not null.
-
-- **Parameters:**
-
-  - `value` (any): The value to check.
-
-- **Returns:** `boolean` - Returns `true` if the value is defined and not null; otherwise, `false`.
-
----
-
-#### `Check.isPromise(value: any): boolean`
-
-Checks if the given value is a Promise.
-
-- **Parameters:**
-
-  - `value` (any): The value to check.
-
-- **Returns:** `boolean` - Returns `true` if the value is a Promise; otherwise, `false`.
-
----
-
-#### `Check.isPending(promise: Promise<any>): Promise<boolean>`
-
-Checks if the given Promise is still pending.
-
-- **Parameters:**
-
-  - `promise` (Promise<any>): The Promise to check.
-
-- **Returns:** `Promise<boolean>` - Returns a Promise that resolves to `true` if the Promise is pending; otherwise, `false`.
-
----
-
-#### `Check.isDate(value: any): boolean`
-
-Checks if the given value is a Date object.
-
-- **Parameters:**
-
-  - `value` (any): The value to check.
-
-- **Returns:** `boolean` - Returns `true` if the value is a Date object; otherwise, `false`.
-
----
-
-#### `Check.isMap(value: any): boolean`
-
-Checks if the given value is a Map object.
-
-- **Parameters:**
-
-  - `value` (any): The value to check.
-
-- **Returns:** `boolean` - Returns `true` if the value is a Map object; otherwise, `false`.
-
----
-
-#### `Check.isRegExp(value: any): boolean`
-
-Checks if the given value is a RegExp object.
-
-- **Parameters:**
-
-  - `value` (any): The value to check.
-
-- **Returns:** `boolean` - Returns `true` if the value is a RegExp object; otherwise, `false`.
-
----
-
-#### `Check.hasFlag(regex: RegExp, flag: string): boolean`
-
-Checks if the given RegExp has the specified flag.
-
-- **Parameters:**
-
-  - `regex` (RegExp): The RegExp to check.
-  - `flag` (string): The flag to check for.
-
-- **Returns:** `boolean` - Returns `true` if the RegExp has the specified flag; otherwise, `false`.
-
----
-
-#### `Check._isPropName(expression: string): boolean`
-
-Checks if the given expression is a valid JavaScript property name.
-
-- **Parameters:**
-
-  - `expression` (string): The expression to check.
-
-- **Returns:** `boolean` - Returns `true` if the expression is a valid property name; otherwise, `false`.
-
----
-
-#### `Check._isNumber(expression: string): boolean`
-
-Checks if the given expression is a valid number.
-
-- **Parameters:**
-
-  - `expression` (string): The expression to check.
-
-- **Returns:** `boolean` - Returns `true` if the expression is a valid number; otherwise, `false`.
-
----
-
-#### `Check._isInteger(expression: string): boolean`
-
-Checks if the given expression is a valid integer.
-
-- **Parameters:**
-
-  - `expression` (string): The expression to check.
-
-- **Returns:** `boolean` - Returns `true` if the expression is a valid integer; otherwise, `false`.
-
----
-
-#### `Check._isFloat(expression: string): boolean`
-
-Checks if the given expression is a valid float.
-
-- **Parameters:**
-
-  - `expression` (string): The expression to check.
-
-- **Returns:** `boolean` - Returns `true` if the expression is a valid float; otherwise, `false`.
-
----
-
-#### `Check._isText(expression: string): boolean`
-
-Checks if the given expression is a valid text string (quoted).
-
-- **Parameters:**
-
-  - `expression` (string): The expression to check.
-
-- **Returns:** `boolean` - Returns `true` if the expression is a valid text string; otherwise, `false`.
-
----
-
-#### `Check._isDotNotation(expression: string): boolean`
-
-Checks if the given expression is valid dot notation.
-
-- **Parameters:**
-
-- `expression` (string): The expression to check.
-
-- **Returns:** `boolean` - Returns `true` if the expression is valid dot notation; otherwise, `false`.
-
----
-
-#### `Check._isBracketNotation(expression: string): boolean`
-
-Checks if the given expression is valid bracket notation.
-
-- **Parameters:**
-
-  - `expression` (string): The expression to check.
-
-- **Returns:** `boolean` - Returns `true` if the expression is valid bracket notation; otherwise, `false`.
-
----
-
-#### `Check._isKey(expression: string): boolean`
-
-Checks if the given expression is a valid key.
-
-- **Parameters:**
-
-  - `expression` (string): The expression to check.
-
-- **Returns:** `boolean` - Returns `true` if the expression is a valid key; otherwise, `false`.
-
----
-
-#### `Check._isArray(expression: string): boolean`
-
-Checks if the given expression is a valid array notation.
-
-- **Parameters:**
-
-  - `expression` (string): The expression to check.
-
-- **Returns:** `boolean` - Returns `true` if the expression is valid array notation; otherwise, `false`.
-
----
-
-#### `Check._isObject(expression: string): boolean`
-
-Checks if the given expression is a valid object notation.
-
-- **Parameters:**
-
-  - `expression` (string): The expression to check.
-
-- **Returns:** `boolean` - Returns `true` if the expression is valid object notation; otherwise, `false`.
-
-## Example Usage
-
-```typescript
-import Check from "@avocajs/check";
-
-let value = [1, 2, 3];
-
-if (Check.isArray(value)) {
-  console.log("Value is an array.");
-}
-
-if (Check.isNonEmptyArray(value)) {
-  console.log("Array is not empty.");
-}
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check.isGreaterThanOrEqual(15, 10)); // true
+console.log(Check.isGreaterThanOrEqual(10, 10)); // true
+console.log(Check.isGreaterThanOrEqual(5, 10)); // false
+console.log(Check.isGreaterThanOrEqual(5, 0)); // true
 ```
 
-## Contributing
+### `isNegativeInfinity(value: any): boolean`
 
-Contributions are welcome! Please read the [contributing guidelines](CONTRIBUTING.md) first.
+Checks if a value is negative infinity.
 
-## License
+```javascript
+const { Check } = require("@avocajs/check");
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+console.log(Check.isNegativeInfinity(-Infinity)); // true
+console.log(Check.isNegativeInfinity(Infinity)); // false
+console.log(Check.isNegativeInfinity(NaN)); // false
+console.log(Check.isNegativeInfinity(123)); // false
+```
 
-## Acknowledgments
+### `isInfinity(value: any): boolean`
 
-- [TypeScript](https://www.typescriptlang.org/)
-- [Node.js](https://nodejs.org/)
+Checks if a value is positive infinity.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check.isInfinity(Infinity)); // true
+console.log(Check.isInfinity(-Infinity)); // false
+console.log(Check.isInfinity(NaN)); // false
+console.log(Check.isInfinity(123)); // false
+```
+
+### `isFinite(value: any): boolean`
+
+Checks if a value is a finite number.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check.isFinite(123)); // true
+console.log(Check.isFinite(Infinity)); // false
+console.log(Check.isFinite(-Infinity)); // false
+console.log(Check.isFinite(NaN)); // false
+```
+
+### `isFunction(value: any): boolean`
+
+Checks if a value is a function.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check.isFunction(function () {})); // true
+console.log(Check.isFunction(() => {})); // true
+console.log(Check.isFunction(123)); // false
+console.log(Check.isFunction("function")); // false
+```
+
+### `isAsyncFunction(value: any): boolean`
+
+Checks if a value is an async function.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check.isAsyncFunction(async function () {})); // true
+console.log(Check.isAsyncFunction(() => {})); // false
+console.log(Check.isAsyncFunction(123)); // false
+console.log(Check.isAsyncFunction("async function")); // false
+```
+
+### `isText(value: any): boolean`
+
+Checks if a value is a string.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check.isText("Hello")); // true
+console.log(Check.isText(123)); // false
+console.log(Check.isText({})); // false
+console.log(Check.isText([])); // false
+```
+
+### `isString(value: any): boolean`
+
+Checks if a value is a string.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check.isString("Hello")); // true
+console.log(Check.isString(123)); // false
+console.log(Check.isString({})); // false
+console.log(Check.isString([])); // false
+```
+
+### `isEmptyText(value: any): boolean`
+
+Checks if a value is an empty string.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check.isEmptyText("")); // true
+console.log(Check.isEmptyText("Hello")); // false
+console.log(Check.isEmptyText(123)); // false
+console.log(Check.isEmptyText({})); // false
+```
+
+### `isNonEmptyText(value: any): boolean`
+
+Checks if a value is a non-empty string.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check.isNonEmptyText("Hello")); // true
+console.log(Check.isNonEmptyText("")); // false
+console.log(Check.isNonEmptyText("   ")); // false
+console.log(Check.isNonEmptyText({})); // false
+```
+
+### `isSymbol(value: any): boolean`
+
+Checks if a value is a symbol.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check.isSymbol(Symbol("symbol"))); // true
+console.log(Check.isSymbol("symbol")); // false
+console.log(Check.isSymbol(123)); // false
+console.log(Check.isSymbol({})); // false
+```
+
+### `isBoolean(value: any): boolean`
+
+Checks if a value is a boolean.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check.isBoolean(true)); // true
+console.log(Check.isBoolean(false)); // true
+console.log(Check.isBoolean(0)); // false
+console.log(Check.isBoolean("true")); // false
+```
+
+### `isTruthy(value: any): boolean`
+
+Checks if a value is truthy.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check.isTruthy(true)); // true
+console.log(Check.isTruthy(1)); // true
+console.log(Check.isTruthy("hello")); // true
+console.log(Check.isTruthy(0)); // false
+```
+
+### `isFalsy(value: any): boolean`
+
+Checks if a value is falsy.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check.isFalsy(false)); // true
+console.log(Check.isFalsy(0)); // true
+console.log(Check.isFalsy("")); // true
+console.log(Check.isFalsy(1)); // false
+```
+
+### `isNull(value: any): boolean`
+
+Checks if a value is null.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check.isNull(null)); // true
+console.log(Check.isNull(undefined)); // false
+console.log(Check.isNull(0)); // false
+console.log(Check.isNull("")); // false
+```
+
+### `isNaN(value: any): boolean`
+
+Checks if a value is NaN (Not-a-Number).
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check.isNaN(NaN)); // true
+console.log(Check.isNaN(123)); // false
+console.log(Check.isNaN("hello")); // false
+console.log(Check.isNaN(undefined)); // false
+```
+
+### `isUndefined(value: any): boolean`
+
+Checks if a value is undefined.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check.isUndefined(undefined)); // true
+console.log(Check.isUndefined(null)); // false
+console.log(Check.isUndefined(0)); // false
+console.log(Check.isUndefined("")); // false
+```
+
+### `isDefined(value: any): boolean`
+
+Checks if a value is defined.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check.isDefined(123)); // true
+console.log(Check.isDefined(null)); // true
+console.log(Check.isDefined(undefined)); // false
+console.log(Check.isDefined("")); // true
+```
+
+### `isDefinedStrict(value: any): boolean`
+
+Checks if a value is defined and not null.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check.isDefinedStrict(123)); // true
+console.log(Check.isDefinedStrict(null)); // false
+console.log(Check.isDefinedStrict(undefined)); // false
+console.log(Check.isDefinedStrict("")); // true
+```
+
+### `isPromise(value: any): boolean`
+
+Checks if a value is a promise.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check.isPromise(Promise.resolve())); // true
+console.log(Check.isPromise({ then: () => {} })); // false
+console.log(Check.isPromise(123)); // false
+console.log(Check.isPromise("promise")); // false
+```
+
+### `isPending(promise: Promise<any>): Promise<boolean>`
+
+Checks if a promise is pending.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+const pendingPromise = new Promise(() => {}); // Pending Promise
+Check.isPending(pendingPromise).then((r) => console.log(r)); // true
+
+const resolvedPromise = Promise.resolve();
+Check.isPending(resolvedPromise).then((r) => console.log(r)); // false
+```
+
+### `isDate(value: any): boolean`
+
+Checks if a value is a date object.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check.isDate(new Date())); // true
+console.log(Check.isDate(Date.now())); // false
+console.log(Check.isDate("2023-01-01")); // false
+console.log(Check.isDate({})); // false
+```
+
+### `isMap(value: any): boolean`
+
+Checks if a value is a Map object.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check.isMap(new Map())); // true
+console.log(Check.isMap({})); // false
+console.log(Check.isMap([])); // false
+console.log(Check.isMap("map")); // false
+```
+
+### `isRegExp(value: any): boolean`
+
+Checks if a value is a regular expression.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check.isRegExp(/regex/)); // true
+console.log(Check.isRegExp(new RegExp("regex"))); // true
+console.log(Check.isRegExp("regex")); // false
+console.log(Check.isRegExp({})); // false
+```
+
+### `hasFlag(regex: RegExp, flag: string): boolean`
+
+Checks if a regular expression has a specific flag.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+const regex = /hello/i;
+console.log(Check.hasFlag(regex, "i")); // true
+console.log(Check.hasFlag(regex, "g")); // false
+```
+
+### `_isPropName(expression: string): boolean`
+
+Checks if a string is a valid property name.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check._isPropName("validProp")); // true
+console.log(Check._isPropName("123")); // false
+console.log(Check._isPropName("$prop")); // true
+console.log(Check._isPropName("prop-name")); // false
+```
+
+### `_isNumber(expression: string): boolean`
+
+Checks if a string is a valid number.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check._isNumber("123")); // true
+console.log(Check._isNumber("123.45")); // true
+console.log(Check._isNumber("abc")); // false
+console.log(Check._isNumber("")); // false
+```
+
+### `_isInteger(expression: string): boolean`
+
+Checks if a string is a valid integer.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check._isInteger("123")); // true
+console.log(Check._isInteger("123.45")); // false
+console.log(Check._isInteger("abc")); // false
+console.log(Check._isInteger("")); // false
+```
+
+### `_isFloat(expression: string): boolean`
+
+Checks if a string is a valid float.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check._isFloat("123.45")); // true
+console.log(Check._isFloat("123")); // false
+console.log(Check._isFloat("abc")); // false
+console.log(Check._isFloat("")); // false
+```
+
+### `_isText(expression: string): boolean`
+
+Checks if a string is valid string.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check._isText("hello")); // true
+console.log(Check._isText("")); // true
+console.log(Check._isText("123")); // true
+console.log(Check._isText({})); // false
+```
+
+### `_isDotNotation(expression: string): boolean`
+
+Checks if a string is a valid dot notation.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check._isDotNotation("object.property")); // true
+console.log(Check._isDotNotation("object['property']")); // false
+console.log(Check._isDotNotation("object.property.subproperty")); // true
+console.log(Check._isDotNotation("object['property.subproperty']")); // false
+```
+
+### `_isBracketNotation(expression: string): boolean`
+
+Checks if a string is a valid bracket notation.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check._isBracketNotation("object[11]")); // true
+console.log(Check._isBracketNotation("object.property")); // false
+console.log(Check._isBracketNotation("object[0][1]")); // true
+console.log(Check._isBracketNotation("object.property.subproperty")); // false
+```
+
+### `_isNotation(expression: string): boolean`
+
+Checks if a string is a valid dot or bracket notation.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check._isNotation("object.property[0]")); // true
+console.log(Check._isNotation("object[0][9]")); // true
+console.log(Check._isNotation("object.property.subproperty")); // true
+console.log(Check._isNotation("object[0].property")); // true
+```
+
+### `isEncoding(value: string): boolean`
+
+Checks if a string is a valid encoding type (e.g., 'utf-8').
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+console.log(Check.isEncoding("utf-8")); // true
+console.log(Check.isEncoding("ascii")); // true
+console.log(Check.isEncoding("base64")); // true
+console.log(Check.isEncoding("invalid-encoding")); // false
+```
+
+### `isClass(value: any): boolean`
+
+Checks if a value is a class.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+class MyClass {}
+console.log(Check.isClass(MyClass)); // true
+console.log(Check.isClass(function () {})); // false
+console.log(Check.isClass({})); // false
+console.log(Check.isClass("class")); // false
+```
+
+### `isChildOf(child: any, parent: any): boolean`
+
+Checks if a class is a child (subclass) of another class.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+class Parent {}
+class Child extends Parent {}
+
+console.log(Check.isChildOf(Child, Parent)); // true
+console.log(Check.isChildOf(Parent, Child)); // false
+console.log(Check.isChildOf(Child, Object)); // true
+console.log(Check.isChildOf(Parent, Object)); // true
+```
+
+### `isError(value: any, type?: any): boolean`
+
+Checks if a value is an error object, optionally of a specific type.
+
+```javascript
+const { Check } = require("@avocajs/check");
+class TypeError extends Error {}
+
+console.log(Check.isError(new Error())); // true
+console.log(Check.isError(new TypeError())); // true
+
+// You can even check the type of the error instance
+console.log(Check.isError(new TypeError(), TypeError)); // true
+console.log(Check.isError(new TypeError(), Error)); // true
+console.log(Check.isError(new Error(), TypeError)); // false
+```
+
+### `hasMessage(error: Error): boolean`
+
+Checks if an error object has a message.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+const error = new Error("Something went wrong");
+console.log(Check.hasMessage(error)); // true
+
+const errorWithoutMessage = new Error();
+errorWithoutMessage.message = "";
+console.log(Check.hasMessage(errorWithoutMessage)); // false
+```
+
+### `hasName(error: Error): boolean`
+
+Checks if an error object has a name.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+const error = new Error();
+console.log(Check.hasName(error)); // true
+
+const customError = new Error();
+customError.name = "";
+console.log(Check.hasName(customError)); // false
+```
+
+### `areFunctions(...values: Array<any>): boolean`
+
+Checks if all provided values are functions.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+// Example 1: All values are functions
+const func1 = () => {};
+const func2 = function () {};
+console.log(Check.areFunctions(func1, func2)); // true
+
+// Example 2: Not all values are functions
+const notAFunction = 123;
+console.log(Check.areFunctions(func1, notAFunction)); // false
+
+// Example 3: Empty input
+console.log(Check.areFunctions()); // false (no values provided)
+```
+
+### `areDefined(...values: Array<any>): boolean`
+
+Checks if all provided values are not `undefined`.
+
+```javascript
+const { Check } = require("@avocajs/check");
+
+// Example 1: All values are defined
+const value1 = 42;
+const value2 = "hello";
+console.log(Check.areDefined(value1, value2)); // true
+
+// Example 2: Some values are undefined
+const undefinedValue = undefined;
+console.log(Check.areDefined(value1, undefinedValue)); // false
+
+// Example 3: Empty input
+console.log(Check.areDefined()); // false (no values provided)
+```

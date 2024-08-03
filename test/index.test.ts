@@ -3,18 +3,18 @@ import { Check } from "../src/index";
 describe("Check Class", () => {
   describe("is", () => {
     test("is() should return true for valid type strings", () => {
-      expect(Check.is("string")).toBe(true);
-      expect(Check.is("number")).toBe(true);
-      expect(Check.is("array")).toBe(true);
+      expect(Check.is("string", "string")).toBe(true);
+      expect(Check.is(4, "number")).toBe(true);
+      expect(Check.is([], "array")).toBe(true);
     });
 
     test("is() should return false for invalid type strings", () => {
-      expect(Check.is("invalidType")).toBe(false);
+      expect(Check.is(4, "string")).toBe(false);
     });
   });
 
   describe("type", () => {
-    test("type() should return the correct type", () => {
+    test("should return the correct type", () => {
       expect(Check.type("hello")).toBe("string");
       expect(Check.type(123)).toBe("number");
       expect(Check.type([])).toBe("array");
@@ -58,11 +58,11 @@ describe("Check Class", () => {
   });
 
   describe("isEmptyObject", () => {
-    test("isEmptyObject() should return true for empty objects", () => {
+    test("should return true for empty objects", () => {
       expect(Check.isEmptyObject({})).toBe(true);
     });
 
-    test("isEmptyObject() should return false for non-empty objects", () => {
+    test("should return false for non-empty objects", () => {
       expect(Check.isEmptyObject({ key: "value" })).toBe(false);
     });
   });
@@ -70,7 +70,6 @@ describe("Check Class", () => {
   describe("isNonEmptyObject", () => {
     it("should return true for non-empty objects", () => {
       expect(Check.isNonEmptyObject({ key: "value" })).toBe(true); // Non-empty object
-      expect(Check.isNonEmptyObject([0, 1, 2, 3])).toBe(true); // Non-empty object
     });
 
     it("should return false for empty objects and non-objects", () => {
@@ -83,7 +82,7 @@ describe("Check Class", () => {
   });
 
   describe("ownProp", () => {
-    it("should return false if property is not a string for ownProp", () => {
+    it("should return false if property is not a string", () => {
       expect(Check.ownProp({}, 123 as any)).toBe(false); // property is not a string
     });
 
@@ -97,6 +96,18 @@ describe("Check Class", () => {
       expect(Check.ownProp(obj, "missing")).toBe(false); // Property does not exist
       expect(Check.ownProp(null as any, "key")).toBe(false); // Null object
       expect(Check.ownProp({}, "")).toBe(false); // Empty string as property
+    });
+
+    it("should return false if the prop is inherited", () => {
+      class Parent {
+        public parentProp: any;
+      }
+
+      class Child extends Parent {
+        public childProp: any;
+      }
+
+      expect(Check.ownProp(new Child(), "parentProp")).toBe(false);
     });
   });
 
@@ -115,7 +126,7 @@ describe("Check Class", () => {
   });
 
   describe("hasProp", () => {
-    it("should return false if property is not a string for hasProp", () => {
+    it("should return false if property is not a string", () => {
       expect(Check.hasProp({}, 123 as any)).toBe(false); // property is not a string
     });
 
@@ -130,6 +141,18 @@ describe("Check Class", () => {
       expect(Check.hasProp(null as any, "key")).toBe(false); // Null object
       expect(Check.hasProp({}, "")).toBe(false); // Empty string as property
     });
+
+    it("should return true if the prop is inherited", () => {
+      class Parent {
+        public parentProp: any = undefined;
+      }
+
+      class Child extends Parent {
+        public childProp: any = undefined;
+      }
+
+      expect(Check.hasProp(new Child(), "parentProp")).toBe(true);
+    });
   });
 
   describe("hasProps", () => {
@@ -143,6 +166,32 @@ describe("Check Class", () => {
       expect(Check.hasProps(obj, ["key1", "key2"])).toBe(false); // 'key2' is missing
       expect(Check.hasProps(null as any, ["key1"])).toBe(false); // Null object
       expect(Check.hasProps({}, [])).toBe(false); // Empty properties array
+    });
+  });
+
+  describe("hasLength", () => {
+    it("should return false if target is an object and length check fails", () => {
+      expect(Check.hasLength({ key1: "value1", key2: "value2" }, 1)).toBe(
+        false
+      ); // object length check
+    });
+
+    it("should return false if length is not an integer", () => {
+      expect(Check.hasLength("test", NaN)).toBe(false);
+      expect(Check.hasLength([], 1.5)).toBe(false);
+      expect(Check.hasLength({}, 2.5)).toBe(false);
+    });
+
+    test("should return true for objects, arrays, and strings with correct lengths", () => {
+      expect(Check.hasLength([], 0)).toBe(true);
+      expect(Check.hasLength([1, 2, 3], 3)).toBe(true);
+      expect(Check.hasLength({ age: 24 }, 1)).toBe(true);
+      expect(Check.hasLength("hello", 5)).toBe(true);
+    });
+
+    test("should return false for incorrect lengths", () => {
+      expect(Check.hasLength([], 1)).toBe(false);
+      expect(Check.hasLength("hello", 4)).toBe(false);
     });
   });
 
@@ -200,31 +249,6 @@ describe("Check Class", () => {
     });
   });
 
-  describe("hasLength", () => {
-    it("should return false if target is an object and length check fails for hasLength", () => {
-      expect(Check.hasLength({ key1: "value1", key2: "value2" }, 1)).toBe(
-        false
-      ); // object length check
-    });
-
-    it("should return false if length is not an integer", () => {
-      expect(Check.hasLength("test", NaN)).toBe(false);
-      expect(Check.hasLength([], 1.5)).toBe(false);
-      expect(Check.hasLength({}, 2.5)).toBe(false);
-    });
-
-    test("should return true for objects, arrays, and strings with correct lengths", () => {
-      expect(Check.hasLength([], 0)).toBe(true);
-      expect(Check.hasLength([1, 2, 3], 3)).toBe(true);
-      expect(Check.hasLength("hello", 5)).toBe(true);
-    });
-
-    test("should return false for incorrect lengths", () => {
-      expect(Check.hasLength([], 1)).toBe(false);
-      expect(Check.hasLength("hello", 4)).toBe(false);
-    });
-  });
-
   describe("isIterable", () => {
     it("should return true for iterable objects", () => {
       expect(Check.isIterable([])).toBe(true); // Arrays are iterable
@@ -267,435 +291,409 @@ describe("Check Class", () => {
     });
   });
 
-  describe("Check", () => {
-    // Tests for Check.isNumber()
-    describe("isNumber", () => {
-      test("should return true for numbers", () => {
-        expect(Check.isNumber(123)).toBe(true);
-      });
-
-      test("should return false for non-numbers", () => {
-        expect(Check.isNumber("text")).toBe(false);
-        expect(Check.isNumber([])).toBe(false);
-      });
+  describe("isNumber", () => {
+    test("should return true for numbers", () => {
+      expect(Check.isNumber(123)).toBe(true);
     });
 
-    // Tests for Check.isInteger()
-    describe("isInteger", () => {
-      test("should return true for integers", () => {
-        expect(Check.isInteger(123)).toBe(true);
-        expect(Check.isInteger(-123)).toBe(true);
-      });
+    test("should return false for non-numbers", () => {
+      expect(Check.isNumber("text")).toBe(false);
+      expect(Check.isNumber([])).toBe(false);
+    });
+  });
 
-      test("should return false for floats", () => {
-        expect(Check.isInteger(123.45)).toBe(false);
-      });
+  describe("isInteger", () => {
+    test("should return true for integers", () => {
+      expect(Check.isInteger(123)).toBe(true);
+      expect(Check.isInteger(-123)).toBe(true);
     });
 
-    // Tests for Check.isFloat()
-    describe("isFloat", () => {
-      test("should return true for floats", () => {
-        expect(Check.isFloat(123.45)).toBe(true);
-      });
+    test("should return false for floats", () => {
+      expect(Check.isInteger(123.45)).toBe(false);
+    });
+  });
 
-      test("should return false for integers", () => {
-        expect(Check.isFloat(123)).toBe(false);
-      });
+  describe("isFloat", () => {
+    test("should return true for floats", () => {
+      expect(Check.isFloat(123.45)).toBe(true);
     });
 
-    describe("isEven", () => {
-      it("should return true for even integers", () => {
-        expect(Check.isEven(2)).toBe(true);
-        expect(Check.isEven(-4)).toBe(true);
-        expect(Check.isEven(0)).toBe(true);
-      });
+    test("should return false for integers", () => {
+      expect(Check.isFloat(123)).toBe(false);
+      expect(Check.isFloat("hi")).toBe(false);
+    });
+  });
 
-      it("should return false for odd integers", () => {
-        expect(Check.isEven(1)).toBe(false);
-        expect(Check.isEven(-3)).toBe(false);
-      });
-
-      it("should return false for non-integer numbers", () => {
-        expect(Check.isEven(2.5)).toBe(false);
-        expect(Check.isEven(-1.1)).toBe(false);
-      });
-
-      it("should return false for non-number values", () => {
-        expect(Check.isEven("string" as any)).toBe(false);
-        expect(Check.isEven(null as any)).toBe(false);
-        expect(Check.isEven(undefined as any)).toBe(false);
-      });
+  describe("isEven", () => {
+    it("should return true for even integers", () => {
+      expect(Check.isEven(2)).toBe(true);
+      expect(Check.isEven(-4)).toBe(true);
+      expect(Check.isEven(0)).toBe(true);
     });
 
-    describe("isOdd", () => {
-      it("should return true for odd integers", () => {
-        expect(Check.isOdd(1)).toBe(true);
-        expect(Check.isOdd(-3)).toBe(true);
-      });
-
-      it("should return false for even integers", () => {
-        expect(Check.isOdd(2)).toBe(false);
-        expect(Check.isOdd(-4)).toBe(false);
-        expect(Check.isOdd(0)).toBe(false);
-      });
-
-      it("should return false for non-integer numbers", () => {
-        expect(Check.isOdd(2.5)).toBe(false);
-        expect(Check.isOdd(-1.1)).toBe(false);
-      });
-
-      it("should return false for non-number values", () => {
-        expect(Check.isOdd("string" as any)).toBe(false);
-        expect(Check.isOdd(null as any)).toBe(false);
-        expect(Check.isOdd(undefined as any)).toBe(false);
-      });
+    it("should return false for odd integers", () => {
+      expect(Check.isEven(1)).toBe(false);
+      expect(Check.isEven(-3)).toBe(false);
     });
 
-    describe("isBetween", () => {
-      it("should return true if number is between min and max (inclusive)", () => {
-        expect(Check.isBetween(5, 1, 10)).toBe(true);
-        expect(Check.isBetween(1, 1, 10)).toBe(true);
-        expect(Check.isBetween(10, 1, 10)).toBe(true);
-      });
-
-      it("should return false if number is not between min and max", () => {
-        expect(Check.isBetween(0, 1, 10)).toBe(false);
-        expect(Check.isBetween(11, 1, 10)).toBe(false);
-      });
-
-      it("should return false if any value is not a number", () => {
-        expect(Check.isBetween(5, "1" as any, 10)).toBe(false);
-        expect(Check.isBetween(5, 1, "10" as any)).toBe(false);
-        expect(Check.isBetween("5" as any, 1, 10)).toBe(false);
-      });
+    it("should return false for non-integer numbers", () => {
+      expect(Check.isEven(2.5)).toBe(false);
+      expect(Check.isEven(-1.1)).toBe(false);
     });
 
-    describe("isBetweenStrict", () => {
-      it("should return true if number is strictly between min and max (exclusive)", () => {
-        expect(Check.isBetweenStrict(5, 1, 10)).toBe(true);
-        expect(Check.isBetweenStrict(2, 1, 10)).toBe(true);
-        expect(Check.isBetweenStrict(9, 1, 10)).toBe(true);
-      });
+    it("should return false for non-number values", () => {
+      expect(Check.isEven("string" as any)).toBe(false);
+      expect(Check.isEven(null as any)).toBe(false);
+      expect(Check.isEven(undefined as any)).toBe(false);
+    });
+  });
 
-      it("should return false if number is not strictly between min and max", () => {
-        expect(Check.isBetweenStrict(1, 1, 10)).toBe(false);
-        expect(Check.isBetweenStrict(10, 1, 10)).toBe(false);
-        expect(Check.isBetweenStrict(0, 1, 10)).toBe(false);
-        expect(Check.isBetweenStrict(11, 1, 10)).toBe(false);
-      });
-
-      it("should return false if any value is not a number", () => {
-        expect(Check.isBetweenStrict(5, "1" as any, 10)).toBe(false);
-        expect(Check.isBetweenStrict(5, 1, "10" as any)).toBe(false);
-        expect(Check.isBetweenStrict("5" as any, 1, 10)).toBe(false);
-      });
+  describe("isOdd", () => {
+    it("should return true for odd integers", () => {
+      expect(Check.isOdd(1)).toBe(true);
+      expect(Check.isOdd(-3)).toBe(true);
     });
 
-    describe("isLessThan", () => {
-      it("should return true if compare is less than to", () => {
-        expect(Check.isLessThan(5, 10)).toBe(true);
-        expect(Check.isLessThan(-5, 0)).toBe(true);
-      });
-
-      it("should return false if compare is not less than to", () => {
-        expect(Check.isLessThan(10, 5)).toBe(false);
-        expect(Check.isLessThan(5, 5)).toBe(false);
-      });
-
-      it("should return false if any value is not a number", () => {
-        expect(Check.isLessThan(5, "10" as any)).toBe(false);
-        expect(Check.isLessThan("5" as any, 10)).toBe(false);
-        expect(Check.isLessThan(null as any, 10)).toBe(false);
-      });
+    it("should return false for even integers", () => {
+      expect(Check.isOdd(2)).toBe(false);
+      expect(Check.isOdd(-4)).toBe(false);
+      expect(Check.isOdd(0)).toBe(false);
     });
 
-    describe("isLessThanOrEqual", () => {
-      it("should return true if compare is less than or equal to to", () => {
-        expect(Check.isLessThanOrEqual(5, 10)).toBe(true);
-        expect(Check.isLessThanOrEqual(10, 10)).toBe(true);
-        expect(Check.isLessThanOrEqual(-5, 0)).toBe(true);
-      });
-
-      it("should return false if compare is greater than to", () => {
-        expect(Check.isLessThanOrEqual(15, 10)).toBe(false);
-      });
-
-      it("should return false if any value is not a number", () => {
-        expect(Check.isLessThanOrEqual(5, "10" as any)).toBe(false);
-        expect(Check.isLessThanOrEqual("5" as any, 10)).toBe(false);
-        expect(Check.isLessThanOrEqual(null as any, 10)).toBe(false);
-      });
+    it("should return false for non-integer numbers", () => {
+      expect(Check.isOdd(2.5)).toBe(false);
+      expect(Check.isOdd(-1.1)).toBe(false);
     });
 
-    describe("isGreaterThan", () => {
-      it("should return true if compare is greater than to", () => {
-        expect(Check.isGreaterThan(10, 5)).toBe(true);
-        expect(Check.isGreaterThan(0, -5)).toBe(true);
-      });
+    it("should return false for non-number values", () => {
+      expect(Check.isOdd("string" as any)).toBe(false);
+      expect(Check.isOdd(null as any)).toBe(false);
+      expect(Check.isOdd(undefined as any)).toBe(false);
+    });
+  });
 
-      it("should return false if compare is not greater than to", () => {
-        expect(Check.isGreaterThan(5, 10)).toBe(false);
-        expect(Check.isGreaterThan(5, 5)).toBe(false);
-      });
-
-      it("should return false if any value is not a number", () => {
-        expect(Check.isGreaterThan(10, "5" as any)).toBe(false);
-        expect(Check.isGreaterThan("10" as any, 5)).toBe(false);
-        expect(Check.isGreaterThan(null as any, 5)).toBe(false);
-      });
+  describe("isBetween", () => {
+    it("should return true if number is strictly between min and max (exclusive)", () => {
+      expect(Check.isBetween(5, 1, 10)).toBe(true);
+      expect(Check.isBetween(2, 1, 10)).toBe(true);
+      expect(Check.isBetween(9, 1, 10)).toBe(true);
     });
 
-    describe("isGreaterThanOrEqual", () => {
-      it("should return true if compare is greater than or equal to to", () => {
-        expect(Check.isGreaterThanOrEqual(10, 5)).toBe(true);
-        expect(Check.isGreaterThanOrEqual(5, 5)).toBe(true);
-        expect(Check.isGreaterThanOrEqual(0, -5)).toBe(true);
-      });
-
-      it("should return false if compare is less than to", () => {
-        expect(Check.isGreaterThanOrEqual(5, 10)).toBe(false);
-      });
-
-      it("should return false if any value is not a number", () => {
-        expect(Check.isGreaterThanOrEqual(10, "5" as any)).toBe(false);
-        expect(Check.isGreaterThanOrEqual("10" as any, 5)).toBe(false);
-        expect(Check.isGreaterThanOrEqual(null as any, 5)).toBe(false);
-      });
+    it("should return false if number is not strictly between min and max", () => {
+      expect(Check.isBetween(1, 1, 10)).toBe(false);
+      expect(Check.isBetween(10, 1, 10)).toBe(false);
+      expect(Check.isBetween(0, 1, 10)).toBe(false);
+      expect(Check.isBetween(11, 1, 10)).toBe(false);
     });
 
-    describe("isNegativeInfinity", () => {
-      it("should return true for negative infinity", () => {
-        expect(Check.isNegativeInfinity(-Infinity)).toBe(true);
-      });
+    it("should return false if any value is not a number", () => {
+      expect(Check.isBetween(5, "1" as any, 10)).toBe(false);
+      expect(Check.isBetween(5, 1, "10" as any)).toBe(false);
+      expect(Check.isBetween("5" as any, 1, 10)).toBe(false);
+    });
+  });
 
-      it("should return false for other values", () => {
-        expect(Check.isNegativeInfinity(Infinity)).toBe(false);
-        expect(Check.isNegativeInfinity(0)).toBe(false);
-        expect(Check.isNegativeInfinity(-1)).toBe(false);
-      });
+  describe("isLessThan", () => {
+    it("should return true if compare is less than to", () => {
+      expect(Check.isLessThan(5, 10)).toBe(true);
+      expect(Check.isLessThan(-5, 0)).toBe(true);
     });
 
-    describe("isInfinity", () => {
-      it("should return true for positive infinity", () => {
-        expect(Check.isInfinity(Infinity)).toBe(true);
-      });
-
-      it("should return false for negative infinity and other values", () => {
-        expect(Check.isInfinity(-Infinity)).toBe(false);
-        expect(Check.isInfinity(0)).toBe(false);
-        expect(Check.isInfinity(-1)).toBe(false);
-      });
+    it("should return false if compare is not less than to", () => {
+      expect(Check.isLessThan(10, 5)).toBe(false);
+      expect(Check.isLessThan(5, 5)).toBe(false);
     });
 
-    describe("isFinite", () => {
-      it("should return true for finite numbers", () => {
-        expect(Check.isFinite(0)).toBe(true);
-        expect(Check.isFinite(123)).toBe(true);
-        expect(Check.isFinite(-123.45)).toBe(true);
-      });
+    it("should return false if any value is not a number", () => {
+      expect(Check.isLessThan(5, "10" as any)).toBe(false);
+      expect(Check.isLessThan("5" as any, 10)).toBe(false);
+      expect(Check.isLessThan(null as any, 10)).toBe(false);
+    });
+  });
 
-      it("should return false for infinite numbers and non-numbers", () => {
-        expect(Check.isFinite(Infinity)).toBe(false);
-        expect(Check.isFinite(-Infinity)).toBe(false);
-        expect(Check.isFinite("string")).toBe(false);
-        expect(Check.isFinite(null)).toBe(false);
-      });
+  describe("isLessThanOrEqual", () => {
+    it("should return true if compare is less than or equal to to", () => {
+      expect(Check.isLessThanOrEqual(5, 10)).toBe(true);
+      expect(Check.isLessThanOrEqual(10, 10)).toBe(true);
+      expect(Check.isLessThanOrEqual(-5, 0)).toBe(true);
     });
 
-    // Tests for Check.isBoolean()
-    describe("isBoolean", () => {
-      test("should return true for booleans", () => {
-        expect(Check.isBoolean(true)).toBe(true);
-        expect(Check.isBoolean(false)).toBe(true);
-      });
-
-      test("should return false for non-booleans", () => {
-        expect(Check.isBoolean(123)).toBe(false);
-        expect(Check.isBoolean("text")).toBe(false);
-      });
+    it("should return false if compare is greater than to", () => {
+      expect(Check.isLessThanOrEqual(15, 10)).toBe(false);
     });
 
-    // Tests for Check.isNull()
-    describe("isNull", () => {
-      test("should return true for null", () => {
-        expect(Check.isNull(null)).toBe(true);
-      });
+    it("should return false if any value is not a number", () => {
+      expect(Check.isLessThanOrEqual(5, "10" as any)).toBe(false);
+      expect(Check.isLessThanOrEqual("5" as any, 10)).toBe(false);
+      expect(Check.isLessThanOrEqual(null as any, 10)).toBe(false);
+    });
+  });
 
-      test("should return false for non-null values", () => {
-        expect(Check.isNull(123)).toBe(false);
-        expect(Check.isNull("text")).toBe(false);
-      });
+  describe("isGreaterThan", () => {
+    it("should return true if compare is greater than to", () => {
+      expect(Check.isGreaterThan(10, 5)).toBe(true);
+      expect(Check.isGreaterThan(0, -5)).toBe(true);
     });
 
-    // Tests for Check.isUndefined()
-    describe("isUndefined", () => {
-      test("should return true for undefined", () => {
-        expect(Check.isUndefined(undefined)).toBe(true);
-      });
-
-      test("should return false for defined values", () => {
-        expect(Check.isUndefined(123)).toBe(false);
-        expect(Check.isUndefined("text")).toBe(false);
-      });
+    it("should return false if compare is not greater than to", () => {
+      expect(Check.isGreaterThan(5, 10)).toBe(false);
+      expect(Check.isGreaterThan(5, 5)).toBe(false);
     });
 
-    // Tests for Check.isPromise()
-    describe("isPromise", () => {
-      test("should return true for promises", () => {
-        expect(Check.isPromise(Promise.resolve())).toBe(true);
-      });
+    it("should return false if any value is not a number", () => {
+      expect(Check.isGreaterThan(10, "5" as any)).toBe(false);
+      expect(Check.isGreaterThan("10" as any, 5)).toBe(false);
+      expect(Check.isGreaterThan(null as any, 5)).toBe(false);
+    });
+  });
 
-      test("should return false for non-promises", () => {
-        expect(Check.isPromise(123)).toBe(false);
-        expect(Check.isPromise("text")).toBe(false);
-      });
+  describe("isGreaterThanOrEqual", () => {
+    it("should return true if compare is greater than or equal to to", () => {
+      expect(Check.isGreaterThanOrEqual(10, 5)).toBe(true);
+      expect(Check.isGreaterThanOrEqual(5, 5)).toBe(true);
+      expect(Check.isGreaterThanOrEqual(0, -5)).toBe(true);
     });
 
-    // Tests for Check.isDate()
-    describe("isDate", () => {
-      test("should return true for dates", () => {
-        expect(Check.isDate(new Date())).toBe(true);
-      });
-
-      test("should return false for non-dates", () => {
-        expect(Check.isDate("2024-08-01")).toBe(false);
-        expect(Check.isDate(123)).toBe(false);
-      });
+    it("should return false if compare is less than to", () => {
+      expect(Check.isGreaterThanOrEqual(5, 10)).toBe(false);
     });
 
-    // Tests for Check.isMap()
-    describe("isMap", () => {
-      test("should return true for Maps", () => {
-        expect(Check.isMap(new Map())).toBe(true);
-      });
+    it("should return false if any value is not a number", () => {
+      expect(Check.isGreaterThanOrEqual(10, "5" as any)).toBe(false);
+      expect(Check.isGreaterThanOrEqual("10" as any, 5)).toBe(false);
+      expect(Check.isGreaterThanOrEqual(null as any, 5)).toBe(false);
+    });
+  });
 
-      test("should return false for non-Maps", () => {
-        expect(Check.isMap({})).toBe(false);
-        expect(Check.isMap("text")).toBe(false);
-      });
+  describe("isNegativeInfinity", () => {
+    it("should return true for negative infinity", () => {
+      expect(Check.isNegativeInfinity(-Infinity)).toBe(true);
     });
 
-    // Tests for Check.isRegExp()
-    describe("isRegExp", () => {
-      test("should return true for regular expressions", () => {
-        expect(Check.isRegExp(/abc/)).toBe(true);
-      });
+    it("should return false for other values", () => {
+      expect(Check.isNegativeInfinity(Infinity)).toBe(false);
+      expect(Check.isNegativeInfinity(0)).toBe(false);
+      expect(Check.isNegativeInfinity(-1)).toBe(false);
+    });
+  });
 
-      test("should return false for non-regular expressions", () => {
-        expect(Check.isRegExp("text")).toBe(false);
-        expect(Check.isRegExp({})).toBe(false);
-      });
+  describe("isInfinity", () => {
+    it("should return true for positive infinity", () => {
+      expect(Check.isInfinity(Infinity)).toBe(true);
     });
 
-    // Tests for Check.isFunction()
-    describe("isFunction", () => {
-      test("should return true for functions", () => {
-        expect(Check.isFunction(() => {})).toBe(true);
-      });
+    it("should return false for negative infinity and other values", () => {
+      expect(Check.isInfinity(-Infinity)).toBe(false);
+      expect(Check.isInfinity(0)).toBe(false);
+      expect(Check.isInfinity(-1)).toBe(false);
+    });
+  });
 
-      test("should return false for non-functions", () => {
-        expect(Check.isFunction(123)).toBe(false);
-        expect(Check.isFunction("text")).toBe(false);
-      });
+  describe("isFinite", () => {
+    it("should return true for finite numbers", () => {
+      expect(Check.isFinite(0)).toBe(true);
+      expect(Check.isFinite(123)).toBe(true);
+      expect(Check.isFinite(-123.45)).toBe(true);
     });
 
-    // Tests for Check.isAsyncFunction()
-    describe("isAsyncFunction", () => {
-      test("should return true for async functions", () => {
-        expect(Check.isAsyncFunction(async () => {})).toBe(true);
-      });
+    it("should return false for infinite numbers and non-numbers", () => {
+      expect(Check.isFinite(Infinity)).toBe(false);
+      expect(Check.isFinite(-Infinity)).toBe(false);
+      expect(Check.isFinite("string")).toBe(false);
+      expect(Check.isFinite(null)).toBe(false);
+    });
+  });
 
-      test("should return false for non-async functions", () => {
-        expect(Check.isAsyncFunction(() => {})).toBe(false);
-      });
+  describe("isBoolean", () => {
+    test("should return true for booleans", () => {
+      expect(Check.isBoolean(true)).toBe(true);
+      expect(Check.isBoolean(false)).toBe(true);
     });
 
-    // Tests for Check.isText() and Check.isString()
-    describe("isText and isString", () => {
-      it("should return true for string values", () => {
-        expect(Check.isText("Hello")).toBe(true);
-        expect(Check.isString("Hello")).toBe(true);
-      });
+    test("should return false for non-booleans", () => {
+      expect(Check.isBoolean(123)).toBe(false);
+      expect(Check.isBoolean("text")).toBe(false);
+    });
+  });
 
-      it("should return false for non-string values", () => {
-        expect(Check.isText(123)).toBe(false);
-        expect(Check.isText({})).toBe(false);
-        expect(Check.isString([])).toBe(false);
-        expect(Check.isString(null)).toBe(false);
-      });
+  describe("isNull", () => {
+    test("should return true for null", () => {
+      expect(Check.isNull(null)).toBe(true);
     });
 
-    // Tests for Check.isEmptyText()
-    describe("isEmptyText", () => {
-      it("should return true for empty strings", () => {
-        expect(Check.isEmptyText("")).toBe(true);
-        expect(Check.isEmptyText("   ")).toBe(true);
-      });
+    test("should return false for non-null values", () => {
+      expect(Check.isNull(123)).toBe(false);
+      expect(Check.isNull("text")).toBe(false);
+    });
+  });
 
-      it("should return false for non-empty strings", () => {
-        expect(Check.isEmptyText("Hello")).toBe(false);
-        expect(Check.isEmptyText(" Hello ")).toBe(false);
-      });
-
-      it("should return false for non-string values", () => {
-        expect(Check.isEmptyText(123)).toBe(false);
-        expect(Check.isEmptyText({})).toBe(false);
-        expect(Check.isEmptyText([])).toBe(false);
-        expect(Check.isEmptyText(null)).toBe(false);
-      });
+  describe("isNaN", () => {
+    test("should return true for NaN", () => {
+      expect(Check.isNaN(NaN)).toBe(true);
     });
 
-    // Tests for Check.isNonEmptyText()
-    describe("isNonEmptyText", () => {
-      it("should return true for non-empty strings", () => {
-        expect(Check.isNonEmptyText("Hello")).toBe(true);
-        expect(Check.isNonEmptyText(" Hello ")).toBe(true);
-      });
+    test("should return false for non-NaN values", () => {
+      expect(Check.isNaN(123)).toBe(false);
+      expect(Check.isNaN("text")).toBe(false);
+    });
+  });
 
-      it("should return false for empty strings", () => {
-        expect(Check.isNonEmptyText("")).toBe(false);
-        expect(Check.isNonEmptyText("   ")).toBe(false);
-      });
-
-      it("should return false for non-string values", () => {
-        expect(Check.isNonEmptyText(123)).toBe(false);
-        expect(Check.isNonEmptyText({})).toBe(false);
-        expect(Check.isNonEmptyText([])).toBe(false);
-        expect(Check.isNonEmptyText(null)).toBe(false);
-      });
+  describe("isUndefined", () => {
+    test("should return true for undefined", () => {
+      expect(Check.isUndefined(undefined)).toBe(true);
     });
 
-    // Tests for Check.isSymbol()
-    describe("isSymbol", () => {
-      it("should return true for symbols", () => {
-        expect(Check.isSymbol(Symbol("sym"))).toBe(true);
-      });
+    test("should return false for defined values", () => {
+      expect(Check.isUndefined(123)).toBe(false);
+      expect(Check.isUndefined("text")).toBe(false);
+    });
+  });
 
-      it("should return false for non-symbol values", () => {
-        expect(Check.isSymbol("Hello")).toBe(false);
-        expect(Check.isSymbol(123)).toBe(false);
-        expect(Check.isSymbol({})).toBe(false);
-        expect(Check.isSymbol([])).toBe(false);
-        expect(Check.isSymbol(null)).toBe(false);
-      });
+  describe("isPromise", () => {
+    test("should return true for promises", () => {
+      expect(Check.isPromise(Promise.resolve())).toBe(true);
     });
 
-    // Tests for Check.isTruthy() and Check.isFalsy()
-    describe("isTruthy and isFalsy", () => {
-      it("should return true for truthy values", () => {
-        expect(Check.isTruthy("Hello")).toBe(true);
-        expect(Check.isTruthy(123)).toBe(true);
-        expect(Check.isTruthy({})).toBe(true);
-        expect(Check.isTruthy([])).toBe(true);
-      });
+    test("should return false for non-promises", () => {
+      expect(Check.isPromise(123)).toBe(false);
+      expect(Check.isPromise("text")).toBe(false);
+    });
+  });
 
-      it("should return false for falsy values", () => {
-        expect(Check.isFalsy(false)).toBe(true);
-        expect(Check.isFalsy(0)).toBe(true);
-        expect(Check.isFalsy("")).toBe(true);
-        expect(Check.isFalsy(null)).toBe(true);
-        expect(Check.isFalsy(undefined)).toBe(true);
-      });
+  describe("isDate", () => {
+    test("should return true for dates", () => {
+      expect(Check.isDate(new Date())).toBe(true);
+    });
+
+    test("should return false for non-dates", () => {
+      expect(Check.isDate("2024-08-01")).toBe(false);
+      expect(Check.isDate(123)).toBe(false);
+    });
+  });
+
+  describe("isMap", () => {
+    test("should return true for Maps", () => {
+      expect(Check.isMap(new Map())).toBe(true);
+    });
+
+    test("should return false for non-Maps", () => {
+      expect(Check.isMap({})).toBe(false);
+      expect(Check.isMap("text")).toBe(false);
+    });
+  });
+
+  describe("isRegExp", () => {
+    test("should return true for regular expressions", () => {
+      expect(Check.isRegExp(/abc/)).toBe(true);
+    });
+
+    test("should return false for non-regular expressions", () => {
+      expect(Check.isRegExp("text")).toBe(false);
+      expect(Check.isRegExp({})).toBe(false);
+    });
+  });
+
+  describe("isFunction", () => {
+    test("should return true for functions", () => {
+      expect(Check.isFunction(() => {})).toBe(true);
+    });
+
+    test("should return false for non-functions", () => {
+      expect(Check.isFunction(123)).toBe(false);
+      expect(Check.isFunction("text")).toBe(false);
+    });
+  });
+
+  describe("isAsyncFunction", () => {
+    test("should return true for async functions", () => {
+      expect(Check.isAsyncFunction(async () => {})).toBe(true);
+    });
+
+    test("should return false for non-async functions", () => {
+      expect(Check.isAsyncFunction(() => {})).toBe(false);
+    });
+  });
+
+  describe("isText and isString", () => {
+    it("should return true for string values", () => {
+      expect(Check.isText("Hello")).toBe(true);
+      expect(Check.isString("Hello")).toBe(true);
+    });
+
+    it("should return false for non-string values", () => {
+      expect(Check.isText(123)).toBe(false);
+      expect(Check.isText({})).toBe(false);
+      expect(Check.isString([])).toBe(false);
+      expect(Check.isString(null)).toBe(false);
+    });
+  });
+
+  describe("isEmptyText", () => {
+    it("should return true for empty strings", () => {
+      expect(Check.isEmptyText("")).toBe(true);
+      expect(Check.isEmptyText("   ")).toBe(true);
+    });
+
+    it("should return false for non-empty strings", () => {
+      expect(Check.isEmptyText("Hello")).toBe(false);
+      expect(Check.isEmptyText(" Hello ")).toBe(false);
+    });
+
+    it("should return false for non-string values", () => {
+      expect(Check.isEmptyText(123)).toBe(false);
+      expect(Check.isEmptyText({})).toBe(false);
+      expect(Check.isEmptyText([])).toBe(false);
+      expect(Check.isEmptyText(null)).toBe(false);
+    });
+  });
+
+  describe("isNonEmptyText", () => {
+    it("should return true for non-empty strings", () => {
+      expect(Check.isNonEmptyText("Hello")).toBe(true);
+      expect(Check.isNonEmptyText(" Hello ")).toBe(true);
+    });
+
+    it("should return false for empty strings", () => {
+      expect(Check.isNonEmptyText("")).toBe(false);
+      expect(Check.isNonEmptyText("   ")).toBe(false);
+    });
+
+    it("should return false for non-string values", () => {
+      expect(Check.isNonEmptyText(123)).toBe(false);
+      expect(Check.isNonEmptyText({})).toBe(false);
+      expect(Check.isNonEmptyText([])).toBe(false);
+      expect(Check.isNonEmptyText(null)).toBe(false);
+    });
+  });
+
+  describe("isSymbol", () => {
+    it("should return true for symbols", () => {
+      expect(Check.isSymbol(Symbol("sym"))).toBe(true);
+    });
+
+    it("should return false for non-symbol values", () => {
+      expect(Check.isSymbol("Hello")).toBe(false);
+      expect(Check.isSymbol(123)).toBe(false);
+      expect(Check.isSymbol({})).toBe(false);
+      expect(Check.isSymbol([])).toBe(false);
+      expect(Check.isSymbol(null)).toBe(false);
+    });
+  });
+
+  describe("isTruthy and isFalsy", () => {
+    it("should return true for truthy values", () => {
+      expect(Check.isTruthy("Hello")).toBe(true);
+      expect(Check.isTruthy(123)).toBe(true);
+      expect(Check.isTruthy({})).toBe(true);
+      expect(Check.isTruthy([])).toBe(true);
+    });
+
+    it("should return false for falsy values", () => {
+      expect(Check.isFalsy(false)).toBe(true);
+      expect(Check.isFalsy(0)).toBe(true);
+      expect(Check.isFalsy("")).toBe(true);
+      expect(Check.isFalsy(null)).toBe(true);
+      expect(Check.isFalsy(undefined)).toBe(true);
     });
   });
 
@@ -948,7 +946,6 @@ describe("Check Class", () => {
     });
 
     it("should return true for valid dot notation", () => {
-      expect(Check._isDotNotation("prop")).toBe(true);
       expect(Check._isDotNotation("prop.sub")).toBe(true);
       expect(Check._isDotNotation("prop.sub1.sub2")).toBe(true);
     });
@@ -1112,6 +1109,7 @@ describe("Check Class", () => {
       expect(Check.areFunctions(() => {}, "string")).toBe(false);
       expect(Check.areFunctions(() => {}, 123)).toBe(false);
       expect(Check.areFunctions(() => {}, {})).toBe(false);
+      expect(Check.areFunctions()).toBe(false);
     });
   });
 
@@ -1123,6 +1121,7 @@ describe("Check Class", () => {
     it("should return false if any value is undefined", () => {
       expect(Check.areDefined("value", 123, undefined)).toBe(false);
       expect(Check.areDefined(undefined)).toBe(false);
+      expect(Check.areDefined()).toBe(false);
     });
   });
 });

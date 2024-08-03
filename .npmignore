@@ -1,0 +1,11 @@
+# Ignore dependencies
+node_modules
+
+# Ignore TypeScript source files
+src
+
+# Ignore test files
+test
+coverage
+jest.config.js
+tsconfig.json
